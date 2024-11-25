@@ -21,22 +21,102 @@ app.use(express.static('public'));
 // Root route: Show form and handle submission
 app.get('/', (req, res) => {
     res.send(`
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>AI MCQ Generator</title>
-        </head>
-        <body>
-            <h1>AI MCQ Generator</h1>
-            <form action="/" method="POST">
-                <label for="chapterName">Enter Chapter Name:</label><br>
-                <input type="text" id="chapterName" name="chapterName" required><br><br>
-                <button type="submit">Generate MCQs</button>
-            </form>
-        </body>
-        </html>
+      <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI MCQ Generator</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to bottom, #f5f7fa, #e4ecf5);
+            color: #444;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        form {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        label {
+            font-size: 16px;
+            font-weight: 500;
+            color: #555;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: background 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #764ba2, #667eea);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <form action="/" method="POST">
+        <h1>AI MCQ Generator</h1>
+        <label for="chapterName">Enter Chapter Name:</label>
+        <input type="text" id="chapterName" name="chapterName" required>
+        <button type="submit">Generate MCQs</button>
+    </form>
+</body>
+</html>
+
     `);
 });
 
@@ -49,7 +129,9 @@ app.post('/', async (req, res) => {
     }
 
     // Simulate AI response
-    const generatedMCQs = await simulateAIResponse(chapterName);
+    let generatedMCQs = await simulateAIResponse(chapterName);
+    generatedMCQs = generatedMCQs.replace(/\n/g, "<br>");
+
 
     // console.log(toString(generatedMCQs))
 
@@ -73,6 +155,108 @@ app.post('/', async (req, res) => {
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Generated MCQs</title>
+                <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f5f7fa;
+            color: #444;
+            line-height: 1.6;
+        }
+
+        h1 {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        ul {
+            max-width: 800px;
+            margin: 30px auto;
+            background: white;
+            padding: 25px 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            font-size: 16px;
+            color: #555;
+        }
+
+        ul br {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        ul strong {
+            display: block;
+            margin-top: 20px;
+            font-size: 18px;
+            color: #764ba2;
+        }
+
+        ul span {
+            color: #666;
+        }
+
+        a {
+            display: inline-block;
+            text-align: center;
+            max-width: 220px;
+            margin: 20px auto;
+            padding: 12px 25px;
+            font-size: 16px;
+            color: white;
+            background: linear-gradient(135deg, #ff8a00, #da1b60);
+            text-decoration: none;
+            border-radius: 25px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        a:hover {
+            background: linear-gradient(135deg, #da1b60, #ff8a00);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Add subtle animations for modern feel */
+        ul {
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        a {
+            animation: popIn 1.2s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+    </style>
         </head>
         <body>
             <h1>MCQs for Chapter: ${chapterName}</h1>

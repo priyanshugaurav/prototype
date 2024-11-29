@@ -15,6 +15,9 @@ const PORT = 3000;
 app.use(bodyParser.urlencoded({ extended: true })); // For form data
 app.use(bodyParser.json()); // For JSON data
 
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
 // Serve static files (CSS, JS if needed later)
 app.use(express.static('public'));
 
@@ -28,91 +31,235 @@ app.get('/', (req, res) => {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI MCQ Generator</title>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(to bottom, #f5f7fa, #e4ecf5);
-            color: #444;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+        * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-        h1 {
-            text-align: center;
-            font-size: 28px;
-            color: #333;
-            margin-bottom: 20px;
-            letter-spacing: 1px;
-        }
+html, body {
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(to bottom right, #111E25 0%, #111 100%);
+  font-family: 'Lato', sans-serif;
+}
 
-        form {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-        }
+body {
+  background-color: #111E25;
+  color:"#fff";
+}
 
-        label {
-            font-size: 16px;
-            font-weight: 500;
-            color: #555;
-            display: block;
-            margin-bottom: 8px;
-        }
+input, 
+button {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -300%);
+  display: block;
+  width: 70vw;
+  opacity: 0;
+  pointer-events: none;
+  transition: all .5s cubic-bezier(.4, .25, .8, .3);
+}
 
-        input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            font-size: 14px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-sizing: border-box;
-            transition: border-color 0.3s ease;
-        }
+input {
+  padding: .25rem 0;
+  border: 0;
+  border-bottom: 1px solid #bb1515;
+  outline: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 3rem;
+  line-height: 4rem;
+  letter-spacing: .125rem;
+  transition: all .5s cubic-bezier(.4, .25, .8, .3);
+}
 
-        input[type="text"]:focus {
-            border-color: #667eea;
-            outline: none;
-        }
+input::selection {
+  background: rgba(187, 21, 21, 0.25);
+}
 
-        button {
-            display: inline-block;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            font-size: 16px;
-            font-weight: 600;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            text-transform: uppercase;
-            transition: background 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
+button,
+.signup-button {
+  padding: .25em 0;
+  border: 0;
+  outline: 0;
+  background: #bb1515;
+  color: rgba(#fff, 0.85);
+  font-size: 2rem;
+  line-height: 3.6rem;
+  letter-spacing: .0625rem;
+  box-shadow: 0 3px 5px 1px rgba(#000, 0.25);
+  text-shadow: 0 -2px 0 rgba(#000, 0.25), 0 1px 0 rgba(#fff, 0.2);
+}
 
-        button:hover {
-            background: linear-gradient(135deg, #764ba2, #667eea);
-            transform: translateY(-2px);
-        }
+input:focus,
+button:focus {
+  opacity: 1;
+  transform: translate(-50%, -100%);
+  pointer-events: auto;
+  transition: all .4s cubic-bezier(.1, .45, .1, .85) .5s;
+  z-index: 10;
+}
 
-        button:active {
-            transform: translateY(0);
-        }
+input:focus ~ input,
+input:focus ~ button {
+  transform: translate(-50%, 500%);
+  transition: all .5s ease-in;
+}
+
+input:focus ~ label .label-text {
+  transform: translate(-50%, 300%);
+  transition: all .5s ease-in;
+}
+
+input:focus ~ .tip {
+  opacity: 1;
+}
+
+input:focus ~ .signup-button,
+button:focus ~ .signup-button {
+  opacity: 0;
+}
+
+input:focus + label .label-text {
+  opacity: 1;
+  transform: translate(-50%, -100%);
+  transition: all .3s cubic-bezier(.1, .45, .1, .85) .4s;
+}
+
+input:focus + label .nav-dot:before {
+  background: darken(#bb1515, 5%);
+  box-shadow: 0 0 0 .15rem #111, 0 0 .05rem .26rem #bb1515;
+}
+
+.tip {
+  position: fixed;
+  top: 57%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70%;
+  opacity: 0;
+  color: #fff;
+  font-size: .875rem;
+  font-weight: 300;
+  letter-spacing: .125rem;
+  text-transform: uppercase;
+  text-align: right;
+  transition: opacity .25s .5s;
+}
+
+.signup-button,
+.signup-button-trigger {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -100%);
+  width: 70vw;
+  padding: .25rem 0;
+  line-height: 3.6rem;
+  text-align: center;
+  pointer-events: none;
+  cursor: pointer;
+  transition: opacity .4s .3s;
+  color:"#fff";
+}
+
+.signup-button-trigger {
+  opacity: 0;
+  pointer-events: auto;
+  color:#ffffff;
+  cursor:pointer
+}
+
+.label-text {
+  position: fixed;
+  top: calc(50% - 4rem);
+  left: 50%;
+  transform: translate(-50%, -300%);
+  width: 70vw;
+  padding: 3.125rem 0 1.5rem;
+  text-transform: uppercase;
+  color: #fff;
+  opacity: 0;
+  font-size: 1.125rem;
+  font-weight: 300;
+  letter-spacing: .125rem;
+  pointer-events: none;
+  transition: all .4s cubic-bezier(.4, .25, .8, .3) .05s;
+}
+
+.nav-dot {
+  cursor: pointer;
+  position: fixed;
+  padding: .625rem 1.25rem .625rem .625rem;  
+  top: 52%;
+  right: 1.25rem;
+}
+
+.nav-dot:before {
+  content: '';  
+  display: inline-block;  
+  border-radius: 50%;
+  width: .375rem;
+  height: .375rem;
+  margin-right: .625rem;  
+  position: fixed;
+  background-color: lighten(#111E25, 3%);
+  border: 0;
+  transition: all 0.25s;
+}
+
+.nav-dot:hover:before {
+  width: .625rem;
+  height: .625rem;
+  margin-top: -.125rem;
+  margin-left: -.125rem;
+  background-color: darken(#bb1515, 5%);
+}
+
+label[for="input-1"] .nav-dot {
+  margin-top: -125px;
+}
+
+label[for="input-2"] .nav-dot {
+  margin-top: -100px;
+}
+
+label[for="input-3"] .nav-dot {
+  margin-top: -75px;
+}
+
+label[for="input-4"] .nav-dot {
+  margin-top: -50px;
+}
+
+label[for="input-5"] .nav-dot {
+  margin-top: -25px;
+}
+
+form {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
     </style>
 </head>
 <body>
     <form action="/" method="POST">
-        <h1>AI MCQ Generator</h1>
-        <label for="chapterName">Enter Chapter Name:</label>
-        <input type="text" id="chapterName" name="chapterName" required>
-        <button type="submit">Generate MCQs</button>
+  <input id="input-1" type="text" placeholder="Topic name" name="chapterName" required autofocus />
+  <label for="input-1">
+    <span class="label-text">" AI MCQs Generator " </span>
+    <span class="nav-dot"></span>
+    <div class="signup-button-trigger">Generate Your MCQs</div>
+  </label>
+
+
+  <button type="submit">Generate Your MCQs</button>
+  <p class="tip">Press Tab</p>
+  <div class="signup-button">Generate Your MCQs</div>
+
     </form>
 </body>
 </html>
@@ -130,7 +277,8 @@ app.post('/', async (req, res) => {
 
     // Simulate AI response
     let generatedMCQs = await simulateAIResponse(chapterName);
-    generatedMCQs = generatedMCQs.replace(/\n/g, "<br>");
+    // generatedMCQs = generatedMCQs.replace(/\n/g, "<br>");
+
 
 
     // console.log(toString(generatedMCQs))
@@ -147,130 +295,17 @@ app.post('/', async (req, res) => {
     // `
     //     )
     //     .join('');
-
-    res.send(`
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Generated MCQs</title>
-                <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #f5f7fa;
-            color: #444;
-            line-height: 1.6;
-        }
-
-        h1 {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            margin: 0;
-            padding: 20px;
-            text-align: center;
-            font-size: 28px;
-            font-weight: 600;
-            letter-spacing: 1px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        ul {
-            max-width: 800px;
-            margin: 30px auto;
-            background: white;
-            padding: 25px 30px;
-            border-radius: 12px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-            font-size: 16px;
-            color: #555;
-        }
-
-        ul br {
-            display: block;
-            margin-bottom: 8px;
-        }
-
-        ul strong {
-            display: block;
-            margin-top: 20px;
-            font-size: 18px;
-            color: #764ba2;
-        }
-
-        ul span {
-            color: #666;
-        }
-
-        a {
-            display: inline-block;
-            text-align: center;
-            max-width: 220px;
-            margin: 20px auto;
-            padding: 12px 25px;
-            font-size: 16px;
-            color: white;
-            background: linear-gradient(135deg, #ff8a00, #da1b60);
-            text-decoration: none;
-            border-radius: 25px;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        a:hover {
-            background: linear-gradient(135deg, #da1b60, #ff8a00);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            transform: translateY(-2px);
-        }
-
-        /* Add subtle animations for modern feel */
-        ul {
-            animation: fadeIn 1s ease-in-out;
-        }
-
-        a {
-            animation: popIn 1.2s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes popIn {
-            from {
-                opacity: 0;
-                transform: scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-    </style>
-        </head>
-        <body>
-            <h1>MCQs for Chapter: ${chapterName}</h1>
-            <ul>${generatedMCQs}</ul>
-            <a href="/">Generate Again</a>
-        </body>
-        </html>
-    `);
+    console.log((generatedMCQs.a[0]))
+    res.render('index', { generatedMCQ:generatedMCQs});
+    
 });
 
 // Simulated AI response
 async function simulateAIResponse(chapterName) {
     const MODEL_NAME = "gemini-1.5-pro-latest";
-    const API_KEY = "AIzaSyBWRIWfnFxUvexQsZEe_Aba5ZDFO__T74w"; 
+    // const API_KEY = "AIzaSyBWRIWfnFxUvexQsZEe_Aba5ZDFO__T74w";
+    // const API_KEY = "AIzaSyB3MgtWjE9Wn_wLXxC5jzcJ34ZvVZ7eCm0" 
+    const API_KEY ="AIzaSyC9_-DC6m3oXM2fYtrpIWuX79r9P9pMtmM"
 
     const genAI = new GoogleGenerativeAI(API_KEY);
     const model = genAI.getGenerativeModel({ model: MODEL_NAME });
@@ -311,10 +346,237 @@ async function simulateAIResponse(chapterName) {
     //     options: ['Option A', 'Option B', 'Option C', 'Option D'],
     //     answer: 'Option A',
     // }));
-    const result = await chat.sendMessage("Prepare 20 mcq from chapter" + chapterName)
+    const result = await chat.sendMessage("Prepare 20 mcq from chapter ," + chapterName + "with answer key at last . Each question should have 4 answer choices, and the correct answer should be clearly marked At the end, provide an answer key with the correct option for each question so that i can just copy and paste it. Format it as follows:" +  `
+1. Which of the following is a common property of acids?
+(a) They taste bitter.
+(b) They feel slippery.
+(c) They turn litmus paper blue.
+(d) They react with metals to produce hydrogen gas.
+
+2. Which of the following is a strong acid?
+(a) Acetic acid
+(b) Hydrochloric acid
+(c) Citric acid
+(d) Carbonic acid
+
+3. What is the pH of a neutral solution?
+(a) 0
+(b) 7
+(c) 14
+(d) 10
+
+4. Which of the following is a weak acid?
+(a) Sulfuric acid
+(b) Nitric acid
+(c) Formic acid
+(d) Hydrochloric acid
+
+5. What is the chemical formula for hydrochloric acid?
+(a) HCl
+(b) H2SO4
+(c) HNO3
+(d) CH3COOH
+
+6. Which of the following is a diprotic acid?
+(a) HCl
+(b) H2SO4
+(c) HNO3
+(d) CH3COOH
+
+7. What is the name of the ion formed when an acid dissolves in water?
+(a) Hydroxide ion
+(b) Hydronium ion
+(c) Oxide ion
+(d) Chloride ion
+
+8. Which of the following is a base?
+(a) HCl
+(b) NaOH
+(c) H2O
+(d) CO2
+
+9. What is the pH of a solution with a hydronium ion concentration of 1 x 10^-4 M?
+(a) 4
+(b) -4
+(c) 10
+(d) -10
+
+10. What is the conjugate base of HCl?
+(a) Cl-
+(b) H2O
+(c) OH-
+(d) H3O+
+
+11. Which of the following is a triprotic acid?
+(a) H3PO4
+(b) H2SO4
+(c) HNO3
+(d) CH3COOH
+
+12. What happens to the pH of a solution when an acid is added?
+(a) It increases.
+(b) It decreases.
+(c) It stays the same.
+(d) It depends on the acid.
+
+13. A solution with a pH of 2 is considered:
+(a) Strongly acidic
+(b) Weakly acidic
+(c) Neutral
+(d) Basic
+
+14. What is the chemical formula for sulfuric acid?
+(a) HNO3
+(b) H2SO4
+(c) HCl
+(d) H3PO4
+
+
+15. Acids react with carbonates to produce:
+(a) Hydrogen gas
+(b) Carbon dioxide gas
+(c) Oxygen gas
+(d) Nitrogen gas
+
+16. A proton donor is another term for a(n):
+(a) Acid
+(b) Base
+(c) Salt
+(d) Oxide
+
+17. The reaction between an acid and a base is called:
+(a) Neutralization
+(b) Oxidation
+(c) Reduction
+(d) Decomposition
+
+
+18. Which acid is found in vinegar?
+(a) Acetic acid
+(b) Citric acid
+(c) Lactic acid
+(d) Tartaric acid
+
+19. What is the concentration of hydronium ions in pure water at 25°C?
+(a) 1.0 x 10^-7 M
+(b) 1.0 x 10^-14 M
+(c) 1.0 x 10^0 M
+(d) 1.0 x 10^7 M
+
+20. Which of the following is NOT a characteristic of a strong acid?
+(a) Completely ionizes in water.
+(b) Has a low pH.
+(c) Reacts slowly with metals.
+(d) Conducts electricity well.
+
+
+**Answer Key:**
+
+1. d
+2. b
+3. b
+4. c
+5. a
+6. b
+7. b
+8. b
+9. a
+10. a
+11. a
+12. b
+13. a
+14. b
+15. b
+16. a
+17. a
+18. a
+19. a
+20. c
+        `)
     console.log(result.response.candidates[0].content.parts[0].text)
     let res = result.response.candidates[0].content.parts[0].text
-    return res
+    const parseQuestions = (input) => {
+        const lines = input.trim().split('\n');
+        let questions = [];
+        let i = 0;
+    
+        while (i < lines.length) {
+            const line = lines[i].trim();
+            const questionMatch = line.match(/^(\d+)[.:]\s(.+)/); // Match questions with . or :
+            if (questionMatch) {
+                const question = {
+                    questionNumber: parseInt(questionMatch[1]),
+                    question: questionMatch[2],
+                    options: []
+                };
+    
+                // Fetch the next 4 lines as options
+                for (let j = 1; j <= 4 && i + j < lines.length; j++) {
+                    const optionLine = lines[i + j].trim();
+                    const optionMatch = optionLine.match(/^\(([a-d])\)\s(.+)/);
+                    if (optionMatch) {
+                        question.options.push({
+                            option: optionMatch[1],
+                            text: optionMatch[2].trim()
+                        });
+                    }
+                }
+                questions.push(question);
+                i += 5; // Skip the question and its 4 options
+            } else {
+                i++; // Move to the next line if no question is found
+            }
+        }
+        questions = questions.slice(0, questions.length - 4); // Removes the last 4 records
+
+        return questions;
+    };
+
+    const parseAnswerKey = (input) => {
+        const lines = input.trim().split('\n');
+        let answers = [];
+        let inAnswerMode = true;
+    
+        lines.forEach(line => {
+            line = line.trim();
+    
+            // Check if "Answer Key" or "Answer" is encountered
+            if (/^Answer Key[:]?/i.test(line) || /^Answer[:]?/i.test(line)) {
+                inAnswerMode = true;
+                return; // Move to the next line
+            }
+    
+            if (true) {
+                const answerMatch = line.match(/(\d+)[.:]\s*[a-d]/gi); // Find patterns like 1. c or 2: a
+                if (answerMatch) {
+                    answerMatch.forEach(answer => {
+                        const [questionNumber, correctOption] = answer.match(/\d+|[a-d]/gi);
+                        answers.push({
+                            questionNumber: parseInt(questionNumber),
+                            correctOption: correctOption
+                        });
+                    });
+                }
+            }
+        });
+
+        answers = answers.filter(item => item.correctOption !== 'A');
+    
+        return answers;
+    };
+    
+    
+    const parsedQuestions = parseQuestions(res);
+    // console.log(parsedQuestions);
+    const parsedAnswers = parseAnswerKey(res);
+    console.log("hahahaha")
+    // console.log(parsedAnswers)
+
+// Output JSON
+// console.log(JSON.stringify(parsedQuestions, null, 2));
+    // console.log(typeof(parsedQuestions))
+    return {"q":parsedQuestions , "a":parsedAnswers}
+    // return res
 }
 
 async function generatePresentation(prompt) {

@@ -305,7 +305,8 @@ async function simulateAIResponse(chapterName) {
     const MODEL_NAME = "gemini-1.5-pro-latest";
     // const API_KEY = "AIzaSyBWRIWfnFxUvexQsZEe_Aba5ZDFO__T74w";
     // const API_KEY = "AIzaSyB3MgtWjE9Wn_wLXxC5jzcJ34ZvVZ7eCm0" 
-    const API_KEY ="AIzaSyC9_-DC6m3oXM2fYtrpIWuX79r9P9pMtmM"
+    // const API_KEY ="AIzaSyC9_-DC6m3oXM2fYtrpIWuX79r9P9pMtmM"
+    const API_KEY ="AIzaSyCCbwcBC5YvBqB0hi45zbBgsIlp3CQ2f0g"
 
     const genAI = new GoogleGenerativeAI(API_KEY);
     const model = genAI.getGenerativeModel({ model: MODEL_NAME });

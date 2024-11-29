@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCQ Test</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f7f6;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            justify-content: center;
+            background-image: linear-gradient(to bottom right, #111E25 0%, #111 100%);
+        }
+        h1 {
+            font-size: 2.5rem;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, #5f2c82, #49a09d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .container {
+            /* background: #ffffff; */
+            border-radius: 16px;
+            padding: 30px;
+            /*box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);*/
+            width: 90%;
+            max-width: 800px;
+            margin: 20px;
+        }
+        .question-block {
+            padding: 20px;
+            background-color: #fafafa;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            /* border-top: 1px solid #ddd; */
+            border-bottom: 1px solid #ddd;
+            background-image: linear-gradient(to bottom right, #111E25 0%, #111 100%);
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        ul li {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px 0px  solid #e0e0e0;
+            background-image: linear-gradient(to bottom right, #111E25 0%, #111 100%);
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+        ul li:hover {
+            background-color: #f3f3f3;
+        }
+        label {
+            font-size: 1.1rem;
+        }
+        input[type="radio"] {
+            margin-right: 10px;
+            accent-color: #49a09d;
+        }
+        button {
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #49a09d, #5f2c82);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        button:hover {
+            background: linear-gradient(135deg, #5f2c82, #49a09d);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+        .hidden {
+            display: none;
+        }
+        .score-container {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .score-circle {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff6a00, #ff4747);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .answers-container {
+            padding: 20px;
+            background-color: #fafafa;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .correct {
+            color: #4caf50;
+            font-weight: bold;
+        }
+        .incorrect {
+            color: #f44336;
+            font-weight: bold;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #ddd;
+            margin: 20px 0;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #888;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>MCQ Test</h1>
+    <div class="container" id="questions-container">
+        <% generatedMCQ.q.forEach(function(question, index) { %>
+            <div class="question-block">
+                <p><strong>Question <%= question.questionNumber %>: </strong><%= question.question %></p>
+                <ul>
+                    <% question.options.forEach(function(option) { %>
+                        <li>
+                            <label>
+                                <input type="radio" name="answer<%= index %>" value="<%= option.option %>">
+                                <%= option.text %>
+                            </label>
+                        </li>
+                    <% }); %>
+                </ul>
+            </div>
+        <% }); %>
+        <button id="submit-btn">Check</button>
+    </div>
+
+    <div class="container hidden" id="score-container">
+        <div id="score-circle" class="score-circle"></div>
+        <button id="view-answers-btn">View Answers</button>
+    </div>
+
+    <div class="container hidden" id="answers-container"></div>
+
+    <!-- <footer>
+        &copy; 2024 MCQ Test App. All rights reserved.
+    </footer> -->
+
+    <script>
+        // Passing data to the client-side as a JSON object
+        const questions = <%- JSON.stringify(generatedMCQ.q) %>;
+        const correctAnswers = <%- JSON.stringify(generatedMCQ.a) %>;
+
+        document.getElementById('submit-btn').addEventListener('click', () => {
+            let score = 0;
+            const totalQuestions = correctAnswers.length;
+
+            // Loop through each question and check the selected answer
+            correctAnswers.forEach((answer, index) => {
+                const selectedOption = document.querySelector(`input[name="answer${index}"]:checked`);
+                if (selectedOption && selectedOption.value === answer.correctOption) {
+                    score++;
+                }
+            });
+
+            // Hide questions and show score
+            document.getElementById('questions-container').classList.add('hidden');
+            const scoreCircle = document.getElementById('score-circle');
+            scoreCircle.innerText = `${score}/${totalQuestions}`;
+            document.getElementById('score-container').classList.remove('hidden');
+        });
+
+        document.getElementById('view-answers-btn').addEventListener('click', () => {
+            const answersContainer = document.getElementById('answers-container');
+
+            // Populate the answers container
+            answersContainer.innerHTML = '';
+            correctAnswers.forEach((answer, index) => {
+                const questionBlock = document.createElement('div');
+                const selectedOption = document.querySelector(`input[name="answer${index}"]:checked`);
+                const userAnswer = selectedOption ? selectedOption.value : 'No Answer';
+
+                // Add question text
+                const questionText = document.createElement('p');
+                questionText.innerHTML = `<strong>Question ${index + 1}:</strong> ${questions[index].question}`;
+                questionBlock.appendChild(questionText);
+
+                // Find the user answer text
+                const userAnswerTextValue = userAnswer !== 'No Answer'
+                    ? questions[index].options.find(opt => opt.option === userAnswer)?.text || 'Invalid Option'
+                    : 'No Answer';
+
+                // Find the correct answer text
+                const correctAnswerTextValue = questions[index].options.find(opt => opt.option === answer.correctOption)?.text;
+
+                // Add user answer with text
+                const userAnswerText = document.createElement('p');
+                userAnswerText.innerHTML = `Your Answer: <span class="${userAnswer === answer.correctOption ? 'correct' : 'incorrect'}">${userAnswer} - ${userAnswerTextValue}</span>`;
+                questionBlock.appendChild(userAnswerText);
+
+                // Add correct answer with text
+                const correctAnswerText = document.createElement('p');
+                correctAnswerText.innerHTML = `Correct Answer: <span class="correct">${answer.correctOption} - ${correctAnswerTextValue}</span>`;
+                questionBlock.appendChild(correctAnswerText);
+
+                // Add to container
+                answersContainer.appendChild(questionBlock);
+                answersContainer.appendChild(document.createElement('hr'));
+            });
+
+            // Hide score card and show answers
+            document.getElementById('score-container').classList.add('hidden');
+            answersContainer.classList.remove('hidden');
+        });
+    </script>
+</body>
+</html>
